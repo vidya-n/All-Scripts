@@ -22,4 +22,5 @@ for i in range(1, 27):
             doctor_urls.append(domain + link['href'])
     #print(f"Page {i} done")
 print(len(doctor_urls))
-print(doctor_urls)
+for i in doctor_urls:
+    print(i)
