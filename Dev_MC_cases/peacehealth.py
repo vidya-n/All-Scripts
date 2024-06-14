@@ -1,5 +1,5 @@
-import requests
-from bs4 import BeautifulSoup as bs
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 import time
 import hashlib
 
@@ -12,31 +12,20 @@ class Nchdoctors(BaseScript):
         count = 1
         profiles = []
         print("hitting the url")
-              
+        url = 'https://www.peacehealth.org/find-care-providers'
+        self.driver.get(url)
+        self.driver.find_element(By.XPATH, '//button[contains(., "More Filters")]').click()
+        self.driver.find_element(By.XPATH, '//label[contains(., "PeaceHealth employed providers")]/preceding-sibling::input').click()
+        self.driver.find_element(By.XPATH, '//button[contains(., "Search")]').click()
+        time.sleep(5)
         
         while True:
             print("test")
             page_count = count
-            url = f'https://www.dulyhealthandcare.com/physicians?page={page_count}&per-page=10'
-            headers = {
-                'Accept': 'text/html',
-                'Accept-Encoding': 'gzip, deflate, br, zstd',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Cache-Control': 'max-age=0',
-                'Cookie': '374d18ba1470ddd026eed29f136fd8=583ugnpe2q45kkt502h1q2j7mq; 7cbf40c6d657754517c6905b0b65fd1e=d14b482c1178045acd4f8beba172576bd0bee91c4b9959c5cb244119b90845c7a%3A2%3A%7Bi%3A0%3Bs%3A32%3A%227cbf40c6d657754517c6905b0b65fd1e%22%3Bi%3A1%3Bs%3A40%3A%22VXywCqp6lLhynEVca3LAu15mohH_DkkBuqXLr3ZG%22%3B%7D; _gcl_au=1.1.572383291.1718263188; _evga_7ee7={%22uuid%22:%2244748a3936c391ce%22}; _sfid_7159={%22anonymousId%22:%2244748a3936c391ce%22%2C%22consents%22:[]}; _ga=GA1.1.435291506.1718263191; _ga_XW0KZBCGRH=GS1.1.1718284941.2.1.1718284948.0.0.0',
-                'Referer': f'https://www.dulyhealthandcare.com/physicians?page={page_count}&per-page=10',
-                'Sec-Cha-Ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-                'Sec-Cha-Ua-Mobile': '?0',
-                'Sec-Cha-Ua-Platform': '"Windows"',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-                'X-Isajax': 'true'
-            }
-            r = requests.get(url, headers=headers)
-            soup = bs(r.text, "html.parser")
-            elements = soup.find_all('a', string='Schedule Online')
+            elements = self.driver.find_elements(By.XPATH, '//h1/a')
             if elements:
                 for i in elements:
-                    doc_url = i['href']
+                    doc_url = i.get_attribute('href')
                     #print(doc_url)
                     hash_object = hashlib.sha256(str(doc_url).encode('utf-8'))
                     profile_id = hash_object.hexdigest()
@@ -68,7 +57,9 @@ class Nchdoctors(BaseScript):
                     #print(len(profiles))
 
             try:
-                print(f"Page {page_count} done")
+                self.driver.find_element(By.XPATH, '//button[contains(., "More")]').click()
+                time.sleep(3)
+                print(f'Page {count} done.')
                 print(len(profiles))
                 count = count + 1
             except Exception as e:
