@@ -6,38 +6,38 @@ import hashlib
 from custom_scripts.base_script import BaseScript
 from selenium.webdriver.common.by import By
 
-class Aurorahealthcare(BaseScript):
+class Stlukesonline(BaseScript):
     
     def process_data(self):
         profiles = []
+        base_url = 'https://www.stlukesonline.org'
         print("hitting the url")
-        offset = 0
-        max = 7786
         page_count = 1
-        while offset <= max:
+        while page_count <= 65:
             print("test")
-            url = f'https://locator-api.localsearchprofiles.com/api/LocationSearchResults/?configuration=3428caf5-3f0a-4dd6-85a9-277a710ec0b0&&address=40.7127753%2C-74.0059728&searchby=address&start={offset}'
-            headers = {
-                'Accept': '*/*',
+            url = f'https://www.stlukesonline.org/api/sitecore/providersearch/ProviderSearch?filters=language%3D%26genderPreference%3D%26searchZip%3D%26FromState%3D%26FromCity%3D%26FromAddress%3D%26distance%3D5%26keyword%3D%26perPage%3D50&page={page_count}
+            headers= {
+                'Accept': 'application/json, text/plain, */*', # type: ignore
                 'Accept-Encoding': 'gzip, deflate, br, zstd',
                 'Accept-Language': 'en-US,en;q=0.9',
-                'Origin': 'https://www.aurorahealthcare.org',
+                'Referer': 'https://www.stlukesonline.org/health-services/find-a-provider/provider-results?',
                 'Sec-Cha-Ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
                 'Sec-Cha-Ua-Mobile': '?0',
                 'Sec-Cha-Ua-Platform': '"Windows"',
+                #'Sec-Fetch-Dest': 'empty',
+                #'Sec-Fetch-Mode': 'cors',
+                #'Sec-Fetch-Site': 'same-origin',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
             }
             payload = {
-                'configuration': '3428caf5-3f0a-4dd6-85a9-277a710ec0b0',
-                'address': '40.7127753,-74.0059728',
-                'searchby': 'address',
-                'start': f'{offset}'
+                'filters': 'language=&genderPreference=&searchZip=&FromState=&FromCity=&FromAddress=&distance=5&keyword=&perPage=50',
+                'page': f'{page_count}'
             }
-            r = requests.get(url, headers=headers)
-            elements = r.json()['Hit']
+            r = requests.post(url, headers=headers) # type: ignore
+            elements = r.json()['providers']
             if elements:
                 for i in elements:
-                    doc_url = i['Fields']['Url'][0]
+                    doc_url = base_url + i['url']
                     #print(doc_url)
                     hash_object = hashlib.sha256(str(doc_url).encode('utf-8'))
                     profile_id = hash_object.hexdigest()
@@ -70,7 +70,6 @@ class Aurorahealthcare(BaseScript):
             try:
                 print(f"Page {page_count} done.")
                 print(len(profiles))
-                offset = (page_count-1)*10
                 page_count += 1
             except Exception as e:
                 print(e)
