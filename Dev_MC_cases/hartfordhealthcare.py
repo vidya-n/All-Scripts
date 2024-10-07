@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup as bs
 from custom_scripts.base_script import BaseScript
 from selenium.webdriver.common.by import By
 
-class Intermountainhealth(BaseScript):
+class Hartfordhealthcare(BaseScript):
     
     def process_data(self):
         profiles = []
