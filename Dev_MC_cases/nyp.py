@@ -14,6 +14,7 @@ class Nyp(BaseScript):
         print("hitting the url")
         base_url = 'https://doctors.nyp.org/'
         page_count = 1
+        skipped_count = 0
         offset = 0
         token = 1
         aff = 'false'
@@ -42,8 +43,19 @@ class Nyp(BaseScript):
                 r = requests.get(url, headers=headers) # type: ignore
                 elements = r.json()['response']['entities']
                 if elements:
-                    for i in elements:
-                        doc_url = i['profile']['websiteUrl']
+                    for element in elements:
+                        try:
+                            if 'websiteUrl' in element['profile']:
+                                doc_url = element['profile']['websiteUrl']
+                                #print(element['profile']['name'])
+                            elif 'url' in element['profile']:
+                                doc_url = base_url + element['profile']['url']
+                                print(element['profile']['name'])
+                        except KeyError:
+                            skipped_count += 1
+                            print(f"Skipping profile without websiteUrl or url: {element['profile'].get('name', 'Unknown')}")
+                            continue
+                        
                         #print(doc_url)
                         hash_object = hashlib.sha256(str(doc_url).encode('utf-8'))
                         profile_id = hash_object.hexdigest()
